@@ -17,12 +17,14 @@ module user_module_341164910646919762
    output wire [7:0] io_out
    );
    wire              clk = io_in[0];
+   wire              seven_segment_dot;
+   assign io_out[7] = seven_segment_dot;
 
    wire [7:0]        io_out_gold;
 
    gold_code_module_341164910646919762 gold_code_generator
      (.clk(clk), .loadn(io_in[4]), .b_load({io_in[7:5], io_in[3:1]}),
-      .io_out(io_out_gold));
+      .gold(seven_segment_dot));
 
    wire [7:0]        io_out_fibonacci;
 
@@ -30,9 +32,7 @@ module user_module_341164910646919762
      (.clk(clk), .clk_scan(io_in[1]), .rstn(io_in[2]), .scan_en(io_in[3]),
       .io_out(io_out_fibonacci));
 
-   user_module_mux_341164910646919762 mux_inst
-     (.sel(io_in[7]), .a(io_out_gold), .b(io_out_fibonacci),
-      .out(io_out));
+   assign io_out[6:0] = io_out_fibonacci[6:0];
 endmodule // user_module_341164910646919762
 
 module user_module_mux_341164910646919762
@@ -53,17 +53,8 @@ module gold_code_module_341164910646919762
    input wire clk,
    input wire loadn,
    input wire [5:0] b_load,
-   output wire [7:0] io_out
+   output wire gold
    );
-
-   wire         gold;
-   assign io_out[7] = gold;
-   wire [2:0]   a_lsbs;
-   assign {io_out[5], io_out[0], io_out[1]} = a_lsbs;
-   wire [2:0]   b_lsbs;
-   assign {io_out[4], io_out[3], io_out[2]} = b_lsbs;
-   wire         load_indicator;
-   assign io_out[6] = load_indicator;
 
    wire [14:0]   a;
 
@@ -103,9 +94,6 @@ module gold_code_module_341164910646919762
       .VPWR(1'b1), .VGND(1'b0));
 
    assign gold = a[0] ^ b[0];
-   assign a_lsbs = a[2:0];
-   assign b_lsbs = b[2:0];
-   assign load_indicator = ~loadn;
 endmodule // gold_code_module_341164910646919762
 
 module fibonacci_module_341164910646919762
