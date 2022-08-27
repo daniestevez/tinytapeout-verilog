@@ -58,8 +58,14 @@ module gold_code_module_341164910646919762
 
    wire [14:0]   a;
 
+   wire          a_xor;
+
+   sky130_fd_sc_hd__xor2_1 a_xor2
+     (.A(a[0]), .B(a[1]), .X(a_xor),
+      .VPWR(1'b1), .VGND(1'b0));
+
    sky130_fd_sc_hd__dfstp_1 a_set_ff
-     (.CLK(clk), .D(a[0] ^ a[1]), .SET_B(loadn),
+     (.CLK(clk), .D(a_xor), .SET_B(loadn),
       .Q(a[14]),
       .VPWR(1'b1), .VGND(1'b0));
 
@@ -70,8 +76,19 @@ module gold_code_module_341164910646919762
 
    wire [14:0]   b;
 
+   wire          b_xor;
+   wire          b_xor_aux;
+
+   sky130_fd_sc_hd__xor3_1 b_xor3
+     (.A(b[0]), .B(b[1]), .C(b[3]), .X(b_xor_aux),
+      .VPWR(1'b1), .VGND(1'b0));
+
+   sky130_fd_sc_hd__xor2_1 b_xor2
+     (.A(b_xor_aux), .B(b[12]), .X(b_xor),
+      .VPWR(1'b1), .VGND(1'b0));
+
    sky130_fd_sc_hd__dfrtp_1 b_msb_ff
-     (.CLK(clk), .D(b[0] ^ b[1] ^ b[3] ^ b[12]),
+     (.CLK(clk), .D(b_xor),
       .RESET_B(loadn),
       .Q(b[14]),
       .VPWR(1'b1), .VGND(1'b0));
@@ -93,7 +110,9 @@ module gold_code_module_341164910646919762
       .Q(b[5:0]),
       .VPWR(1'b1), .VGND(1'b0));
 
-   assign gold = a[0] ^ b[0];
+   sky130_fd_sc_hd__xor2_1 gold_xor2
+     (.A(a[0]), .B(b[0]), .X(gold),
+      .VPWR(1'b1), .VGND(1'b0));
 endmodule // gold_code_module_341164910646919762
 
 module fibonacci_module_341164910646919762
