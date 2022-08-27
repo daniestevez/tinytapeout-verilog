@@ -13,21 +13,38 @@
 
 module user_module_341164910646919762
   (
-   input [7:0]  io_in,
-   output [7:0] io_out
+   input wire [7:0]  io_in,
+   output wire [7:0] io_out
    );
-   wire         clk = io_in[0];
-   wire         rstn = io_in[1];
+   wire              clk = io_in[0];
+   wire              rstn = io_in[1];
 
-   wire         neg;
-   wire         q;
-   assign io_out[1] = q;
-   assign io_out[0] = neg;
-   assign io_out[7:2] = 6'b0;
+   wire [15:0]       fibonacci;
+   assign io_out = fibonacci[15:8];
 
-   sky130_fd_sc_hd__dfrbp_1 ff
-     (.CLK(clk), .D(neg), .RESET_B(rstn),
-      .Q(q), .Q_N(neg),
-      .VPWR(1'b1),
-      .VGND(1'b0));
-endmodule
+   fibonacci_341164910646919762 fib
+     (.clk(clk), .rstn(rstn),
+      .value(fibonacci));
+endmodule // user_module_341164910646919762
+
+module fibonacci_341164910646919762
+  (
+   input wire         clk,
+   input wire         rstn,
+   output wire [15:0] value
+   );
+
+   reg [15:0]    a;
+   assign value = a;
+   reg [15:0]    b;
+
+   always @(posedge clk or negedge rstn) begin
+      a <= b;
+      b <= a + b;
+
+      if (!rstn) begin
+         a <= 1'b0;
+         b <= 1'b1;
+      end
+   end
+endmodule // fibonacci_341164910646919762
