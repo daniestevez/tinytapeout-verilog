@@ -17,20 +17,93 @@ module user_module_341164910646919762
    output wire [7:0] io_out
    );
    wire              clk = io_in[0];
-   wire              clk_scan = io_in[1];
-   wire              rstn = io_in[2];
-   wire              scan_en = io_in[3];
 
-   localparam        DIGITS = 4;
-   localparam        WIDTH = 4 * DIGITS;
+   wire [7:0]        io_out_gold;
 
-   wire [WIDTH-1:0]       fibonacci;
+   gold_code_module_341164910646919762 gold_code_generator
+     (.clk(clk), .load(io_in[4]), .b_load({io_in[7:5], io_in[3:1]}),
+      .io_out(io_out_gold));
+
+   wire [7:0]        io_out_fibonacci;
+
+   fibonacci_module_341164910646919762 #(.DIGITS(4)) fibonacci_inst
+     (.clk(clk), .clk_scan(io_in[1]), .rstn(io_in[2]), .scan_en(io_in[3]),
+      .io_out(io_out_fibonacci));
+
+   user_module_mux_341164910646919762 mux_inst
+     (.sel(io_in[7]), .a(io_out_gold), .b(io_out_fibonacci),
+      .out(io_out));
+endmodule // user_module_341164910646919762
+
+module user_module_mux_341164910646919762
+  (
+   input wire sel,
+   input wire [7:0] a,
+   input wire [7:0] b,
+   output wire [7:0] out
+   );
+
+   sky130_fd_sc_hd__mux2_1 mux2_inst [7:0]
+     (.A0(a), .A1(b), .S(sel), .X(out),
+      .VPWR(1'b1), .VGND(1'b0));
+endmodule // user_module_mux_341164910646919762
+
+module gold_code_module_341164910646919762
+  (
+   input wire clk,
+   input wire load,
+   input wire [5:0] b_load,
+   output wire [7:0] io_out
+   );
+
+   wire         gold;
+   assign io_out[7] = gold;
+   wire [2:0]   a_lsbs;
+   assign {io_out[5], io_out[0], io_out[1]} = a_lsbs;
+   wire [2:0]   b_lsbs;
+   assign {io_out[4], io_out[3], io_out[2]} = b_lsbs;
+   wire         load_indicator;
+   assign io_out[6] = load_indicator;
+
+   reg [14:0]   a;
+   reg [14:0]   b;
+
+   always @(posedge clk) begin
+      a <= {a[0] ^ a[1], a[14:1]};
+      b <= {b[0] ^ b[1] ^ b[3] ^ b[12], b[14:1]};
+
+      if (load) begin
+         a <= {1'b1, 14'b0};
+         b <= {1'b0, 1'b1, 7'b0, b_load};
+      end
+   end
+
+   assign gold = a[0] ^ b[0];
+   assign a_lsbs = a[2:0];
+   assign b_lsbs = b[2:0];
+   assign load_indicator = load;
+endmodule // gold_code_module_341164910646919762
+
+module fibonacci_module_341164910646919762
+  #(
+    parameter DIGITS = 4
+    )
+   (
+    input wire        clk,
+    input wire        clk_scan,
+    input wire        rstn,
+    input wire        scan_en,
+    output wire [7:0] io_out
+    );
+
+   localparam         WIDTH = 4 * DIGITS;
+   wire [WIDTH-1:0]   fibonacci;
 
    fibonacci_341164910646919762 #(.WIDTH(WIDTH)) fib
      (.clk(clk), .rstn(rstn),
       .value(fibonacci));
 
-   wire [3:0]             digit;
+   wire [3:0]         digit;
 
    digit_scan_341164910646919762 #(.DIGITS(DIGITS)) digit_scan
      (.clk(clk_scan), .scan_en(scan_en), .in(fibonacci),
@@ -38,7 +111,7 @@ module user_module_341164910646919762
 
    seven_segment_341164910646919762 seven_segment_encoder
      (.digit(digit), .dot(1'b0), .seven_segment(io_out));
-endmodule // user_module_341164910646919762
+endmodule // fibonacci_module_341164910646919762
 
 module fibonacci_341164910646919762
   #(
