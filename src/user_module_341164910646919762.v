@@ -36,7 +36,8 @@ module user_module_341164910646919762
      (.clk(clk_scan), .scan_en(scan_en), .in(fibonacci),
       .out(digit));
 
-   assign io_out[3:0] = digit;
+   seven_segment_341164910646919762 seven_segment_encoder
+     (.digit(digit), .dot(1'b0), .seven_segment(io_out));
 endmodule // user_module_341164910646919762
 
 module fibonacci_341164910646919762
@@ -119,3 +120,137 @@ module digit_scan_341164910646919762
    end
    endgenerate
 endmodule // digit_scan_341164910646919762
+
+module seven_segment_341164910646919762
+  (
+   input wire [3:0]  digit,
+   input wire        dot,
+   output wire [7:0] seven_segment
+   );
+
+   reg               up, mid, down, left_up,
+                     left_down, right_up, right_down;
+   assign seven_segment = {dot, mid, left_up, left_down,
+                           down, right_down, right_up, up};
+
+   always @(*) begin
+      up = 1'b0;
+      mid = 1'b0;
+      down = 1'b0;
+      left_up = 1'b0;
+      left_down = 1'b0;
+      right_up = 1'b0;
+      right_down = 1'b0;
+      case (digit)
+        4'h0: begin
+           up = 1'b1;
+           down = 1'b1;
+           left_up = 1'b1;
+           left_down = 1'b1;
+           right_up = 1'b1;
+           right_down = 1'b1;
+        end
+        4'h1: begin
+           right_up = 1'b1;
+           right_down = 1'b1;
+        end
+        4'h2: begin
+           up = 1'b1;
+           mid = 1'b1;
+           down = 1'b1;
+           right_up = 1'b1;
+           left_down = 1'b1;
+        end
+        4'h3: begin
+           up = 1'b1;
+           mid = 1'b1;
+           down = 1'b1;
+           right_up = 1'b1;
+           right_down = 1'b1;
+        end
+        4'h4: begin
+           left_up = 1'b1;
+           right_up = 1'b1;
+           mid = 1'b1;
+           right_down = 1'b1;
+        end
+        4'h5: begin
+           up = 1'b1;
+           mid = 1'b1;
+           down = 1'b1;
+           left_up = 1'b1;
+           right_down = 1'b1;
+        end
+        4'h6: begin
+           up = 1'b1;
+           mid = 1'b1;
+           down = 1'b1;
+           left_up = 1'b1;
+           left_down = 1'b1;
+           right_down = 1'b1;
+        end
+        4'h7: begin
+           up = 1'b1;
+           right_up = 1'b1;
+           right_down = 1'b1;
+        end
+        4'h8: begin
+           up = 1'b1;
+           mid = 1'b1;
+           down = 1'b1;
+           left_up = 1'b1;
+           left_down = 1'b1;
+           right_up = 1'b1;
+           right_down = 1'b1;
+        end
+        4'h9: begin
+           up = 1'b1;
+           mid = 1'b1;
+           left_up = 1'b1;
+           right_up = 1'b1;
+           right_down = 1'b1;
+        end
+        4'ha: begin
+           up = 1'b1;
+           mid = 1'b1;
+           left_up = 1'b1;
+           left_down = 1'b1;
+           right_up = 1'b1;
+           right_down = 1'b1;
+        end
+        4'hb: begin
+           mid = 1'b1;
+           down = 1'b1;
+           left_up = 1'b1;
+           left_down = 1'b1;
+           right_down = 1'b1;
+        end
+        4'hc: begin
+           up = 1'b1;
+           down = 1'b1;
+           left_up = 1'b1;
+           left_down = 1'b1;
+        end
+        4'hd: begin
+           mid = 1'b1;
+           down = 1'b1;
+           left_down = 1'b1;
+           right_up = 1'b1;
+           right_down = 1'b1;
+        end
+        4'he: begin
+           up = 1'b1;
+           mid = 1'b1;
+           down = 1'b1;
+           left_up = 1'b1;
+           left_down = 1'b1;
+        end
+        4'hf: begin
+           up = 1'b1;
+           mid = 1'b1;
+           left_up = 1'b1;
+           left_down = 1'b1;
+        end
+      endcase // case (digit)
+   end // always @ (*)
+endmodule // seven_segment_341164910646919762
