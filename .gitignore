@@ -1,1 +1,4 @@
 src/config.tcl
+*~
+/sim/sim_tb
+*.vcd
