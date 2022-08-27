@@ -17,22 +17,37 @@ module user_module_341164910646919762
    output wire [7:0] io_out
    );
    wire              clk = io_in[0];
-   wire              rstn = io_in[1];
+   wire              clk_scan = io_in[1];
+   wire              rstn = io_in[2];
+   wire              scan_en = io_in[3];
 
-   wire [15:0]       fibonacci;
-   assign io_out = fibonacci[15:8];
+   localparam        DIGITS = 4;
+   localparam        WIDTH = 4 * DIGITS;
 
-   fibonacci_341164910646919762 fib
+   wire [WIDTH-1:0]       fibonacci;
+
+   fibonacci_341164910646919762 #(.WIDTH(WIDTH)) fib
      (.clk(clk), .rstn(rstn),
       .value(fibonacci));
+
+   wire [3:0]             digit;
+
+   digit_scan_341164910646919762 #(.DIGITS(DIGITS)) digit_scan
+     (.clk(clk_scan), .scan_en(scan_en), .in(fibonacci),
+      .out(digit));
+
+   assign io_out[3:0] = digit;
 endmodule // user_module_341164910646919762
 
 module fibonacci_341164910646919762
-  (
-   input wire         clk,
-   input wire         rstn,
-   output wire [15:0] value
-   );
+  #(
+    parameter WIDTH = 16
+    )
+   (
+    input wire         clk,
+    input wire         rstn,
+    output wire [WIDTH-1:0] value
+    );
 
    reg [15:0]    a;
    assign value = a;
@@ -78,3 +93,29 @@ module adder_341164910646919762
    end
    endgenerate
 endmodule // adder_341164910646919762
+
+module digit_scan_341164910646919762
+  #(
+    parameter DIGITS = 4
+    )
+   (
+    input wire                clk,
+    input wire                scan_en,
+    input wire [4*DIGITS-1:0] in,
+    output wire [3:0]         out
+    );
+
+   wire [4*DIGITS-1:0]        q;
+   assign out = q[3:0];
+   wire [4*DIGITS-1:0]        scd;
+   assign scd = {4'b0, q[4*DIGITS-1:4]};
+
+   genvar                     i;
+   generate for (i = 0; i < 4 * DIGITS; i = i + 1) begin
+      sky130_fd_sc_hd__sdfxtp_1 scan_ff
+                     (.D(in[i]), .SCD(scd[i]), .SCE(scan_en),
+                      .CLK(clk), .Q(q[i]),
+                      .VPWR(1'b1), .VGND(1'b0));
+   end
+   endgenerate
+endmodule // digit_scan_341164910646919762

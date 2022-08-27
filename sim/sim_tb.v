@@ -3,8 +3,10 @@
 `timescale 1ns/100ps
 
 module sim_tb;
-   reg clk = 1'b0;
-   reg [6:0] switches = 7'b0;
+   reg clk = 1'b1;
+   reg clk_scan = 1'b1;
+   reg rstn = 1'b0;
+   reg scan_en = 1'b0;
 
    initial begin
       $dumpfile("sim.vcd");
@@ -19,15 +21,29 @@ module sim_tb;
       #50;
    end
 
+   always begin
+      scan_en = 1'b0;
+      #10;
+      scan_en = 1'b1;
+      #90;
+   end
+
+   always begin
+      clk_scan = 1'b1;
+      #5;
+      clk_scan = 1'b0;
+      #5;
+   end
+
    initial begin
-      switches[0] = 1'b0;
+      rstn = 1'b0;
       #500;
-      switches[0] = 1'b1;
+      rstn = 1'b1;
    end
 
    user_module_341164910646919762 dut
      (
-      .io_in({switches, clk}),
+      .io_in({4'b0, scan_en, rstn, clk_scan, clk}),
       .io_out()
       );
 endmodule
