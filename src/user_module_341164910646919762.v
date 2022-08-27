@@ -1,6 +1,14 @@
 /* Custom verilog based on the template automatically generated from
 /* https://wokwi.com/projects/341164910646919762 */
 
+`ifdef SIM
+`define UNIT_DELAY #1
+`define FUNCTIONAL
+`define USE_POWER_PINS
+`include "libs.ref/sky130_fd_sc_hd/verilog/primitives.v"
+`include "libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v"
+`endif
+
 `default_nettype none
 
 module user_module_341164910646919762
@@ -9,32 +17,17 @@ module user_module_341164910646919762
    output [7:0] io_out
    );
    wire         clk = io_in[0];
-   wire         load = io_in[1];
-   wire         gold;
-   assign io_out[7] = gold;
-   wire [2:0]   a_lsbs;
-   assign {io_out[5], io_out[0], io_out[1]} = a_lsbs;
-   wire [2:0]   b_lsbs;
-   assign {io_out[4], io_out[3], io_out[2]} = b_lsbs;
-   wire         load_indicator;
-   assign io_out[6] = load_indicator;
-   wire [5:0]   b_load = io_in[7:2];
+   wire         rstn = io_in[1];
 
-   reg [14:0]   a;
-   reg [14:0]   b;
+   wire         neg;
+   wire         q;
+   assign io_out[1] = q;
+   assign io_out[0] = neg;
+   assign io_out[7:2] = 6'b0;
 
-   always @(posedge clk) begin
-      a <= {a[0] ^ a[1], a[14:1]};
-      b <= {b[0] ^ b[1] ^ b[3] ^ b[12], b[14:1]};
-
-      if (load) begin
-         a <= {1'b1, 14'b0};
-         b <= {1'b0, 1'b1, 7'b0, b_load};
-      end
-   end
-
-   assign gold = a[0] ^ b[0];
-   assign a_lsbs = a[2:0];
-   assign b_lsbs = b[2:0];
-   assign load_indicator = load;
+   sky130_fd_sc_hd__dfrbp_1 ff
+     (.CLK(clk), .D(neg), .RESET_B(rstn),
+      .Q(q), .Q_N(neg),
+      .VPWR(1'b1),
+      .VGND(1'b0));
 endmodule

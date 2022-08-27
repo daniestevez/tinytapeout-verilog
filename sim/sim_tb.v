@@ -1,6 +1,6 @@
 `default_nettype none
 
-`timescale 1ms/1us
+`timescale 1ns/100ps
 
 module sim_tb;
    reg clk = 1'b0;
@@ -14,15 +14,15 @@ module sim_tb;
 
    always begin
       clk = 1'b1;
-      #1;
+      #50;
       clk = 1'b0;
-      #1;
+      #50;
    end
 
    initial begin
-      switches[0] = 1'b1;
-      #20;
       switches[0] = 1'b0;
+      #500;
+      switches[0] = 1'b1;
    end
 
    user_module_341164910646919762 dut
