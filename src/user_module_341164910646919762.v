@@ -23,7 +23,7 @@ module user_module_341164910646919762
    wire [7:0]        io_out_gold;
 
    gold_code_module_341164910646919762 gold_code_generator
-     (.clk(clk), .loadn(io_in[4]), .b_load({io_in[7:5], io_in[3:1]}),
+     (.clk(clk), .load(io_in[4]), .b_load({io_in[7:5], io_in[3:1]}),
       .gold(seven_segment_dot));
 
    wire [7:0]        io_out_fibonacci;
@@ -51,68 +51,25 @@ endmodule // user_module_mux_341164910646919762
 module gold_code_module_341164910646919762
   (
    input wire clk,
-   input wire loadn,
+   input wire load,
    input wire [5:0] b_load,
    output wire gold
    );
 
-   wire [14:0]   a;
+   reg [14:0]   a;
+   reg [14:0]   b;
 
-   wire          a_xor;
+   always @(posedge clk) begin
+      a <= {a[0] ^ a[1], a[14:1]};
+      b <= {b[0] ^ b[1] ^ b[3] ^ b[12], b[14:1]};
 
-   sky130_fd_sc_hd__xor2_1 a_xor2
-     (.A(a[0]), .B(a[1]), .X(a_xor),
-      .VPWR(1'b1), .VGND(1'b0));
+      if (load) begin
+         a <= {1'b1, 14'b0};
+         b <= {1'b0, 1'b1, 7'b0, b_load};
+      end
+   end
 
-   sky130_fd_sc_hd__dfstp_1 a_set_ff
-     (.CLK(clk), .D(a_xor), .SET_B(loadn),
-      .Q(a[14]),
-      .VPWR(1'b1), .VGND(1'b0));
-
-   sky130_fd_sc_hd__dfrtp_1 a_rst_ff [13:0]
-     (.CLK(clk), .D(a[14:1]), .RESET_B(loadn),
-      .Q(a[13:0]),
-      .VPWR(1'b1), .VGND(1'b0));
-
-   wire [14:0]   b;
-
-   wire          b_xor;
-   wire          b_xor_aux;
-
-   sky130_fd_sc_hd__xor3_1 b_xor3
-     (.A(b[0]), .B(b[1]), .C(b[3]), .X(b_xor_aux),
-      .VPWR(1'b1), .VGND(1'b0));
-
-   sky130_fd_sc_hd__xor2_1 b_xor2
-     (.A(b_xor_aux), .B(b[12]), .X(b_xor),
-      .VPWR(1'b1), .VGND(1'b0));
-
-   sky130_fd_sc_hd__dfrtp_1 b_msb_ff
-     (.CLK(clk), .D(b_xor),
-      .RESET_B(loadn),
-      .Q(b[14]),
-      .VPWR(1'b1), .VGND(1'b0));
-
-   sky130_fd_sc_hd__dfstp_1 b_msb2_ff [13:0]
-     (.CLK(clk), .D(b[14]), .SET_B(loadn),
-      .Q(b[13]),
-      .VPWR(1'b1), .VGND(1'b0));
-
-   sky130_fd_sc_hd__dfrtp_1 b_middle_ff [6:0]
-     (.CLK(clk), .D(b[13:7]),
-      .RESET_B(loadn),
-      .Q(b[12:6]),
-      .VPWR(1'b1), .VGND(1'b0));
-
-   sky130_fd_sc_hd__sdfxtp_1 b_load_ff [5:0]
-     (.CLK(clk), .D(b_load), .SCD(b[6:1]),
-      .SCE(loadn),
-      .Q(b[5:0]),
-      .VPWR(1'b1), .VGND(1'b0));
-
-   sky130_fd_sc_hd__xor2_1 gold_xor2
-     (.A(a[0]), .B(b[0]), .X(gold),
-      .VPWR(1'b1), .VGND(1'b0));
+   assign gold = a[0] ^ b[0];
 endmodule // gold_code_module_341164910646919762
 
 module fibonacci_module_341164910646919762
