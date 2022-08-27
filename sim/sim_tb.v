@@ -8,7 +8,7 @@ module sim_tb;
    reg rstn = 1'b0;
    reg scan_en = 1'b0;
    reg mux_sel = 1'b0;
-   reg load_gold = 1'b1;
+   reg load_gold_n = 1'b0;
 
    initial begin
       $dumpfile("sim.vcd");
@@ -51,14 +51,14 @@ module sim_tb;
    end
 
    initial begin
-      load_gold = 1'b1;
+      load_gold_n = 1'b0;
       #500;
-      load_gold = 1'b0;
+      load_gold_n = 1'b1;
    end
 
    user_module_341164910646919762 dut
      (
-      .io_in({mux_sel, 2'b0, load_gold, scan_en, rstn, clk_scan, clk}),
+      .io_in({mux_sel, 2'b0, load_gold_n, scan_en, rstn, clk_scan, clk}),
       .io_out()
       );
 endmodule

@@ -21,7 +21,7 @@ module user_module_341164910646919762
    wire [7:0]        io_out_gold;
 
    gold_code_module_341164910646919762 gold_code_generator
-     (.clk(clk), .load(io_in[4]), .b_load({io_in[7:5], io_in[3:1]}),
+     (.clk(clk), .loadn(io_in[4]), .b_load({io_in[7:5], io_in[3:1]}),
       .io_out(io_out_gold));
 
    wire [7:0]        io_out_fibonacci;
@@ -51,7 +51,7 @@ endmodule // user_module_mux_341164910646919762
 module gold_code_module_341164910646919762
   (
    input wire clk,
-   input wire load,
+   input wire loadn,
    input wire [5:0] b_load,
    output wire [7:0] io_out
    );
@@ -65,23 +65,47 @@ module gold_code_module_341164910646919762
    wire         load_indicator;
    assign io_out[6] = load_indicator;
 
-   reg [14:0]   a;
-   reg [14:0]   b;
+   wire [14:0]   a;
 
-   always @(posedge clk) begin
-      a <= {a[0] ^ a[1], a[14:1]};
-      b <= {b[0] ^ b[1] ^ b[3] ^ b[12], b[14:1]};
+   sky130_fd_sc_hd__dfstp_1 a_set_ff
+     (.CLK(clk), .D(a[0] ^ a[1]), .SET_B(loadn),
+      .Q(a[14]),
+      .VPWR(1'b1), .VGND(1'b0));
 
-      if (load) begin
-         a <= {1'b1, 14'b0};
-         b <= {1'b0, 1'b1, 7'b0, b_load};
-      end
-   end
+   sky130_fd_sc_hd__dfrtp_1 a_rst_ff [13:0]
+     (.CLK(clk), .D(a[14:1]), .RESET_B(loadn),
+      .Q(a[13:0]),
+      .VPWR(1'b1), .VGND(1'b0));
+
+   wire [14:0]   b;
+
+   sky130_fd_sc_hd__dfrtp_1 b_msb_ff
+     (.CLK(clk), .D(b[0] ^ b[1] ^ b[3] ^ b[12]),
+      .RESET_B(loadn),
+      .Q(b[14]),
+      .VPWR(1'b1), .VGND(1'b0));
+
+   sky130_fd_sc_hd__dfstp_1 b_msb2_ff [13:0]
+     (.CLK(clk), .D(b[14]), .SET_B(loadn),
+      .Q(b[13]),
+      .VPWR(1'b1), .VGND(1'b0));
+
+   sky130_fd_sc_hd__dfrtp_1 b_middle_ff [6:0]
+     (.CLK(clk), .D(b[13:7]),
+      .RESET_B(loadn),
+      .Q(b[12:6]),
+      .VPWR(1'b1), .VGND(1'b0));
+
+   sky130_fd_sc_hd__sdfxtp_1 b_load_ff [5:0]
+     (.CLK(clk), .D(b_load), .SCD(b[6:1]),
+      .SCE(loadn),
+      .Q(b[5:0]),
+      .VPWR(1'b1), .VGND(1'b0));
 
    assign gold = a[0] ^ b[0];
    assign a_lsbs = a[2:0];
    assign b_lsbs = b[2:0];
-   assign load_indicator = load;
+   assign load_indicator = ~loadn;
 endmodule // gold_code_module_341164910646919762
 
 module fibonacci_module_341164910646919762
