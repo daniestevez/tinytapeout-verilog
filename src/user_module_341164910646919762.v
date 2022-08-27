@@ -56,16 +56,16 @@ module gold_code_module_341164910646919762
    output wire gold
    );
 
-   reg [14:0]   a;
-   reg [14:0]   b;
+   reg [12:0]   a;
+   reg [12:0]   b;
 
    always @(posedge clk) begin
-      a <= {a[0] ^ a[1], a[14:1]};
-      b <= {b[0] ^ b[1] ^ b[3] ^ b[12], b[14:1]};
+      a <= {a[0] ^ a[1] ^ a[3] ^ a[4], a[14:1]};
+      b <= {b[0] ^ b[4] ^ b[5] ^ b[7] ^ b[8] ^ b[9], b[14:1]};
 
       if (load) begin
-         a <= {1'b1, 14'b0};
-         b <= {1'b0, 1'b1, 7'b0, b_load};
+         a <= {1'b1, 12'b0};
+         b <= {1'b0, 1'b1, 5'b0, b_load};
       end
    end
 
