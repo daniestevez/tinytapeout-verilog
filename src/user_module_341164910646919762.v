@@ -23,7 +23,7 @@ module user_module_341164910646919762
    wire [7:0]        io_out_gold;
 
    gold_code_module_341164910646919762 gold_code_generator
-     (.clk(clk), .load(io_in[4]), .b_load({io_in[7:5], io_in[3:1]}),
+     (.clk(clk), .loadn(io_in[4]), .b_load({io_in[7:5], io_in[3:1]}),
       .gold(seven_segment_dot));
 
    wire [7:0]        io_out_fibonacci;
@@ -60,23 +60,27 @@ endmodule // user_module_mux_341164910646919762
 module gold_code_module_341164910646919762
   (
    input wire clk,
-   input wire load,
+   input wire loadn,
    input wire [5:0] b_load,
    output wire gold
    );
 
    reg [12:0]   a;
-   reg [12:0]   b;
+   reg [6:0]    b_async;
+   reg [5:0]    b_sync;
+   wire [12:0]  b = {b_async, b_sync};
 
-   always @(posedge clk) begin
+   always @(posedge clk or negedge loadn) begin
       a <= {a[0] ^ a[1] ^ a[3] ^ a[4], a[12:1]};
-      b <= {b[0] ^ b[4] ^ b[5] ^ b[7] ^ b[9] ^ b[10], b[12:1]};
+      b_async <= {b[0] ^ b[4] ^ b[5] ^ b[7] ^ b[9] ^ b[10], b[12:7]};
 
-      if (load) begin
+      if (!loadn) begin
          a <= {1'b1, 12'b0};
-         b <= {1'b0, 1'b1, 5'b0, b_load};
+         b_async <= {1'b0, 1'b1, 5'b0};
       end
    end
+
+   always @(posedge clk) b_sync <= loadn ? b[6:1] : b_load;
 
    assign gold = a[0] ^ b[0];
 endmodule // gold_code_module_341164910646919762
