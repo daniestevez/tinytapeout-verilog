@@ -17,30 +17,30 @@ module user_module_341164910646919762
    output wire [7:0] io_out
    );
    wire              clk = io_in[0];
-   wire              seven_segment_dot;
-   assign io_out[7] = seven_segment_dot;
-
-   wire [7:0]        io_out_gold;
+   wire              output_select = io_in[1];
+   wire              gold_out;
 
    gold_code_module_341164910646919762 gold_code_generator
-     (.clk(clk), .loadn(io_in[4]), .b_load({io_in[7:5], io_in[3:1]}),
-      .gold(seven_segment_dot));
+     (.clk(clk), .loadn(io_in[3]), .b_load({io_in[7:4], io_in[2:1]}),
+      .gold(gold_out));
 
    wire [7:0]        io_out_fibonacci;
    wire              fib_clk;
    wire              fib_rstn;
 
    // These buffers are used to fix slew violations
-   sky130_fd_sc_hd__buf_2 fib_clk_buf
-     (.A(clk), .X(fib_clk), .VPWR(1'b1), .VGND(1'b0));
-
-   sky130_fd_sc_hd__buf_2 fib_rstn_buf
-     (.A(io_in[2]), .X(fib_rstn), .VPWR(1'b1), .VGND(1'b0));
+   //sky130_fd_sc_hd__buf_2 fib_clk_buf
+   //  (.A(clk), .X(fib_clk), .VPWR(1'b1), .VGND(1'b0));
+   //
+   //sky130_fd_sc_hd__buf_2 fib_rstn_buf
+   //  (.A(io_in[2]), .X(fib_rstn), .VPWR(1'b1), .VGND(1'b0));
+   assign fib_clk = clk;
+   assign fib_rstn = io_in[2];
 
    fibonacci_module_341164910646919762 #(.DIGITS(4)) fibonacci_inst
-     (.clk(fib_clk), .clk_scan(io_in[1]), .rstn(fib_rstn), .scan_en(io_in[3]),
-      .io_out(io_out_fibonacci));
+     (.clk(fib_clk), .rstn(fib_rstn), .io_out(io_out_fibonacci));
 
+   assign io_out[7] = output_select ? gold_out : io_out_fibonacci[7];
    assign io_out[6:0] = io_out_fibonacci[6:0];
 endmodule // user_module_341164910646919762
 
@@ -91,109 +91,85 @@ module fibonacci_module_341164910646919762
     )
    (
     input wire        clk,
-    input wire        clk_scan,
     input wire        rstn,
-    input wire        scan_en,
     output wire [7:0] io_out
     );
 
-   localparam         WIDTH = 4 * DIGITS;
-   wire [WIDTH-1:0]   fibonacci;
-
-   fibonacci_341164910646919762 #(.WIDTH(WIDTH)) fib
-     (.clk(clk), .rstn(rstn),
-      .value(fibonacci));
-
    wire [3:0]         digit;
+   wire               lsb_marker;
 
-   digit_scan_341164910646919762 #(.DIGITS(DIGITS)) digit_scan
-     (.clk(clk_scan), .scan_en(scan_en), .in(fibonacci),
-      .out(digit));
+   fibonacci_341164910646919762 #(.DIGITS(DIGITS)) fib
+     (.clk(clk), .rstn(rstn), .digit(digit),
+      .lsb_marker(lsb_marker));
 
    seven_segment_341164910646919762 seven_segment_encoder
-     (.digit(digit), .dot(1'b0), .seven_segment(io_out));
+     (.digit(digit), .dot(lsb_marker), .seven_segment(io_out));
 endmodule // fibonacci_module_341164910646919762
 
 module fibonacci_341164910646919762
   #(
-    parameter WIDTH = 16
+    parameter DIGITS = 4
     )
    (
-    input wire         clk,
-    input wire         rstn,
-    output wire [WIDTH-1:0] value
+    input wire        clk,
+    input wire        rstn,
+    output wire [3:0] digit,
+    output wire       lsb_marker
     );
 
-   reg [15:0]    a;
-   assign value = a;
-   reg [15:0]    b;
+   localparam         WIDTH = 4 * DIGITS;
 
-   wire [15:0]   sum;
-   adder_341164910646919762 #(.WIDTH(16)) adder
-     (.a(a), .b(b), .sum(sum));
+   reg [WIDTH-1:0]    a;
+   assign digit = a[3:0];
+   reg [WIDTH-1:0]    b;
+   reg                carry;
+
+   wire [3:0]         digit_sum;
+   wire               cout;
+
+   reg [DIGITS-1:0]   lsb_control;
+   wire               lsb_marker_prev;
+   assign lsb_marker_prev = lsb_control[DIGITS-1];
+   assign lsb_marker = lsb_control[0];
+
+   adder4_341164910646919762 adder
+     (.a(a[3:0]), .b(b[3:0]), .cin(carry),
+      .sum(digit_sum), .cout(cout));
 
    always @(posedge clk or negedge rstn) begin
-      a <= b;
-      b <= sum;
+      a <= {b[3:0], a[WIDTH-1:4]};
+      b <= {digit_sum, b[WIDTH-1:4]};
+      carry <= lsb_marker_prev ? 1'b0 : cout;
+      lsb_control <= {lsb_control[DIGITS-2:0], lsb_control[DIGITS-1]};
 
       if (!rstn) begin
          a <= 1'b0;
          b <= 1'b1;
+         carry <= 1'b0;
+         lsb_control <= 1'b1;
       end
    end
 endmodule // fibonacci_341164910646919762
 
-module adder_341164910646919762
-  #(
-    parameter WIDTH = 16
-    )
-   (
-    input wire [WIDTH-1:0] a,
-    input wire [WIDTH-1:0] b,
-    output wire [WIDTH-1:0] sum
-    );
+module adder4_341164910646919762
+  (
+   input wire [3:0]  a,
+   input wire [3:0]  b,
+   input wire        cin,
+   output wire [3:0] sum,
+   output wire       cout
+   );
 
-   wire [WIDTH-1:0]         cout;
+   wire [3:0]        adder_cin;
+   wire [3:0]        adder_cout;
+   assign cout = adder_cout[3];
+   assign adder_cin = {adder_cout[2:0], cin};
 
-   sky130_fd_sc_hd__ha_1 add_first
-     (.A(a[0]), .B(b[0]), .COUT(cout[0]), .SUM(sum[0]),
+   sky130_fd_sc_hd__fa_1 adder [3:0]
+     (.A(a), .B(b), .CIN(adder_cin),
+      .COUT(adder_cout), .SUM(sum),
       .VPWR(1'b1), .VGND(1'b0));
-
-   genvar                   i;
-   generate for (i = 1; i < WIDTH; i = i + 1) begin
-      sky130_fd_sc_hd__fa_1 add_rest
-                     (.A(a[i]), .B(b[i]), .CIN(cout[i-1]),
-                      .COUT(cout[i]), .SUM(sum[i]),
-                      .VPWR(1'b1), .VGND(1'b0));
-   end
-   endgenerate
-endmodule // adder_341164910646919762
-
-module digit_scan_341164910646919762
-  #(
-    parameter DIGITS = 4
-    )
-   (
-    input wire                clk,
-    input wire                scan_en,
-    input wire [4*DIGITS-1:0] in,
-    output wire [3:0]         out
-    );
-
-   wire [4*DIGITS-1:0]        q;
-   assign out = q[3:0];
-   wire [4*DIGITS-1:0]        d;
-   assign d = {4'b0, q[4*DIGITS-1:4]};
-
-   genvar                     i;
-   generate for (i = 0; i < 4 * DIGITS; i = i + 1) begin
-      sky130_fd_sc_hd__sdfxtp_1 scan_ff
-                     (.D(d[i]), .SCD(in[i]), .SCE(scan_en),
-                      .CLK(clk), .Q(q[i]),
-                      .VPWR(1'b1), .VGND(1'b0));
-   end
-   endgenerate
-endmodule // digit_scan_341164910646919762
+endmodule // adder4_341164910646919762
 
 module seven_segment_341164910646919762
   (

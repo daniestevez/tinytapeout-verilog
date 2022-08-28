@@ -4,9 +4,7 @@
 
 module sim_tb;
    reg clk = 1'b1;
-   reg clk_scan = 1'b1;
    reg rstn = 1'b0;
-   reg scan_en = 1'b1;
    reg mux_sel = 1'b0;
    reg load_gold_n = 1'b0;
 
@@ -21,20 +19,6 @@ module sim_tb;
       #50;
       clk = 1'b0;
       #50;
-   end
-
-   always begin
-      scan_en = 1'b1;
-      #10;
-      scan_en = 1'b0;
-      #90;
-   end
-
-   always begin
-      clk_scan = 1'b1;
-      #5;
-      clk_scan = 1'b0;
-      #5;
    end
 
    always begin
@@ -58,7 +42,7 @@ module sim_tb;
 
    user_module_341164910646919762 dut
      (
-      .io_in({mux_sel, 2'b0, load_gold_n, scan_en, rstn, clk_scan, clk}),
+      .io_in({4'b0, load_gold_n, rstn, mux_sel, clk}),
       .io_out()
       );
 endmodule
