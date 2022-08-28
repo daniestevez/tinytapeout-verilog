@@ -89,8 +89,12 @@ module fibonacci_module_341164910646919762
      (.clk(clk), .rstn(rstn), .digit(digit),
       .lsb_marker(lsb_marker));
 
+   wire [7:0]         seven_segment_out;
+   
    seven_segment_341164910646919762 seven_segment_encoder
-     (.digit(digit), .dot(lsb_marker), .seven_segment(io_out));
+     (.digit(digit), .dot(lsb_marker), .seven_segment(seven_segment_out));
+
+   assign io_out = clk ? seven_segment_out : 8'b0;
 endmodule // fibonacci_module_341164910646919762
 
 module fibonacci_341164910646919762
