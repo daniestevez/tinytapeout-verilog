@@ -28,12 +28,17 @@ module user_module_341164910646919762
 
    wire [7:0]        io_out_fibonacci;
    wire              fib_clk;
+   wire              fib_rstn;
 
+   // These buffers are used to fix slew violations
    sky130_fd_sc_hd__buf_2 fib_clk_buf
      (.A(clk), .X(fib_clk), .VPWR(1'b1), .VGND(1'b0));
 
+   sky130_fd_sc_hd__buf_2 fib_rstn_buf
+     (.A(io_in[2]), .X(fib_rstn), .VPWR(1'b1), .VGND(1'b0));
+
    fibonacci_module_341164910646919762 #(.DIGITS(4)) fibonacci_inst
-     (.clk(fib_clk), .clk_scan(io_in[1]), .rstn(io_in[2]), .scan_en(io_in[3]),
+     (.clk(fib_clk), .clk_scan(io_in[1]), .rstn(fib_rstn), .scan_en(io_in[3]),
       .io_out(io_out_fibonacci));
 
    assign io_out[6:0] = io_out_fibonacci[6:0];
