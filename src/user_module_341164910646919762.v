@@ -33,19 +33,6 @@ module user_module_341164910646919762
    assign io_out[6:0] = io_out_fibonacci[6:0];
 endmodule // user_module_341164910646919762
 
-module user_module_mux_341164910646919762
-  (
-   input wire sel,
-   input wire [7:0] a,
-   input wire [7:0] b,
-   output wire [7:0] out
-   );
-
-   sky130_fd_sc_hd__mux2_1 mux2_inst [7:0]
-     (.A0(a), .A1(b), .S(sel), .X(out),
-      .VPWR(1'b1), .VGND(1'b0));
-endmodule // user_module_mux_341164910646919762
-
 module gold_code_module_341164910646919762
   (
    input wire clk,
