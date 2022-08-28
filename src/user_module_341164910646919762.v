@@ -69,8 +69,8 @@ module gold_code_module_341164910646919762
    reg [12:0]   b;
 
    always @(posedge clk) begin
-      a <= {a[0] ^ a[1] ^ a[3] ^ a[4], a[11:1]};
-      b <= {b[0] ^ b[4] ^ b[5] ^ b[7] ^ b[8] ^ b[9], b[11:1]};
+      a <= {a[0] ^ a[1] ^ a[3] ^ a[4], a[12:1]};
+      b <= {b[0] ^ b[4] ^ b[5] ^ b[7] ^ b[9] ^ b[10], b[12:1]};
 
       if (load) begin
          a <= {1'b1, 12'b0};
