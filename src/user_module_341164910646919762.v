@@ -27,9 +27,13 @@ module user_module_341164910646919762
       .gold(seven_segment_dot));
 
    wire [7:0]        io_out_fibonacci;
+   wire              fib_clk;
+
+   sky130_fd_sc_hd__buf_2 fib_clk_buf
+     (.A(clk), .X(fib_clk), .VPWR(1'b1), .VGND(1'b0));
 
    fibonacci_module_341164910646919762 #(.DIGITS(4)) fibonacci_inst
-     (.clk(clk), .clk_scan(io_in[1]), .rstn(io_in[2]), .scan_en(io_in[3]),
+     (.clk(fib_clk), .clk_scan(io_in[1]), .rstn(io_in[2]), .scan_en(io_in[3]),
       .io_out(io_out_fibonacci));
 
    assign io_out[6:0] = io_out_fibonacci[6:0];
