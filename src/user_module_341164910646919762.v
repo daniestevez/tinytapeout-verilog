@@ -173,13 +173,13 @@ module digit_scan_341164910646919762
 
    wire [4*DIGITS-1:0]        q;
    assign out = q[3:0];
-   wire [4*DIGITS-1:0]        scd;
-   assign scd = {4'b0, q[4*DIGITS-1:4]};
+   wire [4*DIGITS-1:0]        d;
+   assign d = {4'b0, q[4*DIGITS-1:4]};
 
    genvar                     i;
    generate for (i = 0; i < 4 * DIGITS; i = i + 1) begin
       sky130_fd_sc_hd__sdfxtp_1 scan_ff
-                     (.D(in[i]), .SCD(scd[i]), .SCE(scan_en),
+                     (.D(d[i]), .SCD(in[i]), .SCE(scan_en),
                       .CLK(clk), .Q(q[i]),
                       .VPWR(1'b1), .VGND(1'b0));
    end

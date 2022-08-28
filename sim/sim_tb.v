@@ -6,7 +6,7 @@ module sim_tb;
    reg clk = 1'b1;
    reg clk_scan = 1'b1;
    reg rstn = 1'b0;
-   reg scan_en = 1'b0;
+   reg scan_en = 1'b1;
    reg mux_sel = 1'b0;
    reg load_gold = 1'b1;
 
@@ -24,9 +24,9 @@ module sim_tb;
    end
 
    always begin
-      scan_en = 1'b0;
-      #10;
       scan_en = 1'b1;
+      #10;
+      scan_en = 1'b0;
       #90;
    end
 
