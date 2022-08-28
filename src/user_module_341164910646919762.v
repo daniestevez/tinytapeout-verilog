@@ -26,7 +26,7 @@ module user_module_341164910646919762
 
    wire [7:0]        io_out_fibonacci;
 
-   fibonacci_module_341164910646919762 #(.DIGITS(8)) fibonacci_inst
+   fibonacci_module_341164910646919762 #(.DIGITS(7)) fibonacci_inst
      (.clk(clk), .rstn(io_in[2]), .io_out(io_out_fibonacci));
 
    assign io_out[7] = output_select ? gold_out : io_out_fibonacci[7];
@@ -63,7 +63,7 @@ endmodule // gold_code_module_341164910646919762
 
 module fibonacci_module_341164910646919762
   #(
-    parameter DIGITS = 4
+    parameter DIGITS = 7
     )
    (
     input wire        clk,
@@ -84,7 +84,7 @@ endmodule // fibonacci_module_341164910646919762
 
 module fibonacci_341164910646919762
   #(
-    parameter DIGITS = 4
+    parameter DIGITS = 7
     )
    (
     input wire        clk,
