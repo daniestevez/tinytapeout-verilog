@@ -59,7 +59,18 @@ module input_synchronizer_341164910646919762
    output reg [6:0] out
    );
 
-   always @(negedge clk) out <= in;
+   // We use a clock inverter rather than negedge triggered flip-flops because
+   // this takes less area.
+   wire             clkn;
+
+   sky130_fd_sc_hd__clkinv_1 clock_inverter
+     (.A(clk), .Y(clkn)
+`ifdef WITH_POWER
+      ,.VPWR(1'b1), .VGND(1'b0)
+`endif
+      );
+      
+   always @(posedge clkn) out <= in;
 endmodule // input_synchronizer_341164910646919762
 
 module gold_code_module_341164910646919762
