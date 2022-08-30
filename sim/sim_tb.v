@@ -23,9 +23,9 @@ module sim_tb;
 
    always begin
       mux_sel = 1'b0;
-      #1;
+      #5000;
       mux_sel = 1'b1;
-      #1;
+      #5000;
    end
 
    initial begin

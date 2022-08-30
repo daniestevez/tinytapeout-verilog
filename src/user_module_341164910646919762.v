@@ -17,12 +17,20 @@ module user_module_341164910646919762
    output wire [7:0] io_out
    );
    wire              clk = io_in[0];
-   wire              output_select = io_in[1];
+   wire [6:0]        io_in_sync;
+
+   // This makes non-clock inputs change only on falling edges of the clock,
+   // which avoids timing violations with all the other flip-flops (which are
+   // rising-edge triggered).
+   input_synchronizer_341164910646919762 input_sync
+     (.clk(clk), .in(io_in[7:1]), .out(io_in_sync));
+   
+   wire              output_select = io_in_sync[0];
    wire              gold_out;
 
    gold_code_module_341164910646919762 gold_code_generator
-     (.clk(clk), .loadn(io_in[3]), .b_load({io_in[7:4], io_in[2:1]}),
-      .gold(gold_out));
+     (.clk(clk), .loadn(io_in_sync[2]),
+      .b_load({io_in_sync[6:3], io_in_sync[1:0]}), .gold(gold_out));
 
    wire [7:0]        io_out_fibonacci;
    wire              fib_clk;
@@ -33,16 +41,22 @@ module user_module_341164910646919762
      (.A(clk), .X(fib_clk),
       .VPWR(1'b1), .VGND(1'b0));
 
-   sky130_fd_sc_hd__buf_2 fib_rstn_buf
-     (.A(io_in[2]), .X(fib_rstn),
-      .VPWR(1'b1), .VGND(1'b0));
-
    fibonacci_module_341164910646919762 #(.DIGITS(7)) fibonacci_inst
-     (.clk(fib_clk), .rstn(fib_rstn), .io_out(io_out_fibonacci));
+     (.clk(fib_clk), .rstn(io_in_sync[1]), .io_out(io_out_fibonacci));
 
    assign io_out[7] = output_select ? gold_out : io_out_fibonacci[7];
    assign io_out[6:0] = io_out_fibonacci[6:0];
 endmodule // user_module_341164910646919762
+
+module input_synchronizer_341164910646919762
+  (
+   input wire       clk,
+   input wire [6:0] in,
+   output reg [6:0] out
+   );
+
+   always @(negedge clk) out <= in;
+endmodule // input_synchronizer_341164910646919762
 
 module gold_code_module_341164910646919762
   (
