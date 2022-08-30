@@ -5,6 +5,7 @@
 `define UNIT_DELAY #1
 `define FUNCTIONAL
 `define USE_POWER_PINS
+`define WITH_POWER
 `include "libs.ref/sky130_fd_sc_hd/verilog/primitives.v"
 `include "libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v"
 `endif
@@ -38,8 +39,11 @@ module user_module_341164910646919762
 
    // Buffers to fix slew failures
    sky130_fd_sc_hd__buf_2 fib_clk_buf
-     (.A(clk), .X(fib_clk),
-      .VPWR(1'b1), .VGND(1'b0));
+     (.A(clk), .X(fib_clk)
+`ifdef WITH_POWER
+      ,.VPWR(1'b1), .VGND(1'b0)
+`endif
+);
 
    fibonacci_module_341164910646919762 #(.DIGITS(7)) fibonacci_inst
      (.clk(fib_clk), .rstn(io_in_sync[1]), .io_out(io_out_fibonacci));
@@ -172,8 +176,11 @@ module adder4_341164910646919762
 
    sky130_fd_sc_hd__fa_1 adder [3:0]
      (.A(a), .B(b), .CIN(adder_cin),
-      .COUT(adder_cout), .SUM(sum),
-      .VPWR(1'b1), .VGND(1'b0));
+      .COUT(adder_cout), .SUM(sum)
+`ifdef WITH_POWER
+      ,.VPWR(1'b1), .VGND(1'b0)
+`endif
+);
 endmodule // adder4_341164910646919762
 
 module seven_segment_341164910646919762
