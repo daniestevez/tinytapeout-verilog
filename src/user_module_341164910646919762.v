@@ -38,15 +38,15 @@ module user_module_341164910646919762
    wire              fib_rstn;
 
    // Buffers to fix slew failures
-   sky130_fd_sc_hd__buf_2 fib_clk_buf
-     (.A(clk), .X(fib_clk)
-`ifdef WITH_POWER
-      ,.VPWR(1'b1), .VGND(1'b0)
-`endif
-);
+//    sky130_fd_sc_hd__buf_2 fib_clk_buf
+//      (.A(clk), .X(fib_clk)
+// `ifdef WITH_POWER
+//       ,.VPWR(1'b1), .VGND(1'b0)
+// `endif
+// );
 
    fibonacci_module_341164910646919762 #(.DIGITS(7)) fibonacci_inst
-     (.clk(fib_clk), .rstn(io_in_sync[1]), .io_out(io_out_fibonacci));
+     (.clk(clk), .rstn(io_in_sync[1]), .io_out(io_out_fibonacci));
 
    assign io_out[7] = output_select ? gold_out : io_out_fibonacci[7];
    assign io_out[6:0] = io_out_fibonacci[6:0];
